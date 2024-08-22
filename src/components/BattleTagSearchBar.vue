@@ -20,6 +20,7 @@ const profileData = reactive({
       tier: "",
       divisionIcon: "",
       rankIcon: "",
+      status: "",
     },
     {
       role: "",
@@ -28,6 +29,7 @@ const profileData = reactive({
       tier: "",
       divisionIcon: "",
       rankIcon: "",
+      status: "",
     },
     {
       role: "",
@@ -36,9 +38,39 @@ const profileData = reactive({
       tier: "",
       divisionIcon: "",
       rankIcon: "",
+      status: "",
+    },
+    {
+      role: "",
+      roleIcon: "",
+      group: "",
+      tier: "",
+      divisionIcon: "",
+      rankIcon: "",
+      status: "",
     },
   ],
 });
+function resetProfileData() {
+  profileData.private = "";
+  profileData.name = "";
+  profileData.icon = "";
+  profileData.endorsement = "";
+  profileData.endorsementIcon = "";
+  profileData.gamesWon = "";
+  profileData.gamesLost = "";
+  profileData.gameRatio = "";
+  profileData.gamesPlayed = "";
+  profileData.ratings.forEach((rating) => {
+    rating.role = "";
+    rating.roleIcon = "";
+    rating.group = "";
+    rating.tier = "";
+    rating.divisionIcon = "";
+    rating.rankIcon = "";
+    rating.status = "";
+  });
+}
 const ready = ref(false);
 
 async function getProfile() {
@@ -47,6 +79,7 @@ async function getProfile() {
       "https://ow-api.com/v1/stats/pc/eu/" + battleTagUser.value + "/profile"
     );
     const profile = await response.json();
+    resetProfileData();
     console.log(profile);
 
     profileData.private = profile.private;
@@ -63,17 +96,27 @@ async function getProfile() {
         : "" + profileData.gameRatio;
     profileData.gamesPlayed = profile.gamesPlayed;
     if (Array.isArray(profile.ratings)) {
-      profile.ratings.forEach((rating, index) => {
-        if (index < profileData.ratings.length) {
-          profileData.ratings[index].role = rating.role;
-          profileData.ratings[index].roleIcon = rating.roleIcon;
-          profileData.ratings[index].group = rating.group;
-          profileData.ratings[index].tier = rating.tier;
-          profileData.ratings[index].divisionIcon = rating.divisionIcon;
-          profileData.ratings[index].rankIcon = rating.rankIcon;
-        }
-      });
+  profile.ratings.forEach((rating, index) => {
+    if (index < profileData.ratings.length) {
+      profileData.ratings[index].role = rating.role;
+      profileData.ratings[index].roleIcon = rating.roleIcon;
+      profileData.ratings[index].group = rating.group;
+      profileData.ratings[index].tier = rating.tier;
+      profileData.ratings[index].divisionIcon = rating.divisionIcon;
+      profileData.ratings[index].rankIcon = rating.rankIcon;
     }
+  });
+
+  // Vérifiez les indices non définis dans profile.ratings et marquez-les comme "empty"
+  for (let i = profile.ratings.length; i < profileData.ratings.length; i++) {
+    profileData.ratings[i].status = "empty";
+  }
+} else {
+  // Si profile.ratings n'est pas un tableau, marquez tout comme "empty"
+  profileData.ratings.forEach(rating => {
+    rating.status = "empty";
+  });
+}
     ready.value = !ready.value;
     console.dir(profileData);
   } catch (error) {
@@ -87,21 +130,21 @@ async function getProfile() {
     <input
       type="text"
       v-model="battleTagUser"
-      placeholder="Enter BattleTag with a - instead of a #( Player-1234)"
+      placeholder="Enter BattleTag with a - instead of a # (Player-1234)"
     />
     <button @click="getProfile">Search</button>
   </div>
   <div v-if="ready" id="result">
     <img :src="profileData.icon" />
 
-      <h1>{{ profileData.name }}</h1>
-      <img
-        :src="profileData.endorsementIcon"
-        :alt="
-          'Overwatch\'s endorsement picture level ' + profileData.endorsement
-        "
-        style="max-width: 65px"
-      />
+    <h1>{{ profileData.name }}</h1>
+    <img
+      :src="profileData.endorsementIcon"
+      :alt="
+        'Overwatch\'s endorsement picture level ' + profileData.endorsement
+      "
+      style="max-width: 65px"
+    />
 
     <ul>
       <li>Matches played : {{ profileData.gamesPlayed }}</li>
@@ -109,28 +152,34 @@ async function getProfile() {
       <li>Matches lost : {{ profileData.gamesLost }}</li>
       <li>W/L ratio : {{ profileData.gameRatio }}</li>
     </ul>
-    <!-- il y a parfois un bug dans l'image utiliser lors du premier role  -->
+    <!-- Il y a parfois un bug dans l'image utilisée pour le premier rôle -->
     <section>
       <div v-for="(rating, index) in profileData.ratings" :key="index">
-        <img
-          :src="rating.roleIcon"
-          :alt="'Overwatch\'s logo for the ' + rating.role + ' role'"
-        />
-        <h3>Role: {{ rating.role }}</h3>
-        <img
-          :src="rating.rankIcon"
-          :alt="'Overwatch\'s logo for the rank ' + rating.group"
-        />
-        <h3>Rank: {{ rating.group }}</h3>
-        <img
-          :src="rating.divisionIcon"
-          :alt="'Overwatch\'s logo for division ' + rating.tier"
-        />
-        <h3>Division: {{ rating.tier }}</h3>
+        <div v-if="rating.status == 'empty'">
+          <p>Unable to access the player's ratings. If this is your account, please complete your placement games.</p>
+        </div>
+        <div v-else>
+          <img
+            :src="rating.roleIcon"
+            :alt="'Overwatch\'s logo for the ' + rating.role + ' role'"
+          />
+          <h3>Role: {{ rating.role }}</h3>
+          <img
+            :src="rating.rankIcon"
+            :alt="'Overwatch\'s logo for the rank ' + rating.group"
+          />
+          <h3>Rank: {{ rating.group }}</h3>
+          <img
+            :src="rating.divisionIcon"
+            :alt="'Overwatch\'s logo for division ' + rating.tier"
+          />
+          <h3>Division: {{ rating.tier }}</h3>
+        </div>
       </div>
     </section>
   </div>
 </template>
+
 
 <style scoped>
 #result {
