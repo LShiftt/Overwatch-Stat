@@ -20,18 +20,13 @@ import { RouterLink, RouterView } from 'vue-router'
 
 <style scoped>
 header {
-  line-height: 1.5;
   max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+  margin-bottom: 50px;
 }
 
 nav {
   width: 100%;
-  font-size: 12px;
+  font-size: 1.8rem;
   text-align: center;
   margin-top: 2rem;
 }
@@ -53,16 +48,22 @@ nav a {
 nav a:first-of-type {
   border: 0;
 }
-
-@media (min-width: 1024px) {
+@media (max-width: 665px) {
+  header {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 50px;
+}
+}
+@media (min-width: 666px) {
   header {
     display: flex;
     place-items: center;
     padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
+    margin-bottom: 50px;
+    align-items: flex-end;
   }
 
   header .wrapper {
@@ -74,7 +75,7 @@ nav a:first-of-type {
   nav {
     text-align: left;
     margin-left: -1rem;
-    font-size: 1rem;
+    font-size: 2rem;
 
     padding: 1rem 0;
     margin-top: 1rem;
